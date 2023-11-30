@@ -14,7 +14,8 @@ interface IProps {
  * Perspective library adds load to HTMLElement prototype.
  * This interface acts as a wrapper for Typescript compiler.
  */
-interface PerspectiveViewerElement {
+//extending HTMLElement to enable the interface to behave accordingly
+interface PerspectiveViewerElement extends HTMLElement {
   load: (table: Table) => void,
 }
 
@@ -32,7 +33,8 @@ class Graph extends Component<IProps, {}> {
 
   componentDidMount() {
     // Get element to attach the table from the DOM.
-    const elem: PerspectiveViewerElement = document.getElementsByTagName('perspective-viewer')[0] as unknown as PerspectiveViewerElement;
+    // Simplifying 'elem' definition because PerspectiveViewerElement was extended the HTMLElement above
+    const elem = document.getElementsByTagName('perspective-viewer')[0] as unknown as PerspectiveViewerElement;
 
     const schema = {
       stock: 'string',
@@ -48,7 +50,17 @@ class Graph extends Component<IProps, {}> {
       // Load the `table` in the `<perspective-viewer>` DOM reference.
 
       // Add more Perspective configurations here.
+      // Adding attributes view, column-pivots, row-pivots, columns, and aggregates
       elem.load(this.table);
+      elem.setAttribute('view', 'y_line'); // Updated view to line graph
+      elem.setAttribute('column-pivots', '["stock"]'); // Will allow us to distinguist stock ABC from DEF
+      elem.setAttribute('row-pivots', '["timestamp"]'); // Maps datapoint based on timestamp for x-axis
+      elem.setAttribute('columns', '["top_ask_price"]'); // Lets us focus on stock's data along y-axis
+      elem.setAttribute('aggregates', `
+        {"stock":"distinct count",
+        "top_ask_price":"avg",
+        "top_bid_price":"avg",
+        "timestamp":"distinct count"}`); // This section consolidates duplicated data into a single point, showing us only unique values
     }
   }
 
